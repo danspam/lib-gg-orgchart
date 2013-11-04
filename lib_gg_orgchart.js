@@ -4,7 +4,7 @@
 * Copyright (c) 2012 Gorka G Llona - http://desarrolladores.logicos.org/gorka.
 * Licensed under the GNU Lesser General Public License.
 * Project home: http://librerias.logicas.org/lib_gg_orgchart.
-* 
+*
 * Revision history:
 * v.0.4.0        (2012.05.14, GG): made publicly available
 * v.0.4.1 beta 1 (2012.07.11, GG): added support for images within boxes
@@ -47,7 +47,8 @@
         oc_max_text_height,
         oc_max_title_lines,
         oc_max_subtitle_lines,
-        oc_paper;
+        oc_paper,
+        template;
 
 
 
@@ -104,7 +105,7 @@
     // "PRIVATE" FUNCTIONS AND VARIABLES
 
     // clone an object or array
-    // 
+    //
     function oc_clone(obj) {
         var newObj = (obj instanceof Array) ? [] : {};
         for (var i in obj) {
@@ -148,7 +149,7 @@
     //
     function oc_init(aData, aOptions) {
         if (aData === undefined || aData === null) {
-            console.log('ggOrgChart: data are not defined');
+            console.log('ggOrgChart: data is not defined');
             return;
         }
         data = aData;
@@ -163,15 +164,10 @@
         oc_max_subtitle_lines = 0;
         oc_paper = null;
 
-        // verify libraries if needed
-        if (typeof options.box_html_template == "string") {
-            if (window.jQuery === undefined)
-                console.log("jQuery is not loaded properly");
-            else {
-                var j = jQuery("<div></div>");
-                if (typeof j.render != "function")
-                    console.log("jsrender.js is not loaded properly");
-            }
+        if (window.Handlebars === undefined || window.jQuery === undefined) {
+            console.log("Handlebars and jQuery are not loaded properly");
+        } else {
+            template = window.Handlebars.compile(options.box_html_template || "");
         }
     }
 
@@ -698,7 +694,7 @@
     // PATCH 1, subcase a. node with only staff children and up to one subordinate
     //
     function subtreeMustBeShiftedRightCaseA(node) {
-        var subordinate_count = 0; 
+        var subordinate_count = 0;
         var child_count       = 0;
         if (node.children !== undefined) {
             for (i = 0; i < node.children.length; i++) {
@@ -718,7 +714,7 @@
     // PATCH 1, subcase b. node with a left staff child that has 2+ subordinate children
     //
     function subtreeMustBeShiftedRightCaseB(node) {
-        var subordinate_count = 0; 
+        var subordinate_count = 0;
         if (node.children !== undefined) {
             for (i = 0; i < node.children.length; i++) {
                 child = node.children[i];
@@ -757,7 +753,7 @@
         if (cdc1 + child.fullbbox[1] > y1) y1 = cdc1 + child.fullbbox[1];
         if (x0 < node.deltacorner[0])      node.deltacorner[0] = x0;
 
-        // in nodes with 3+ staff children, ignore them for fullbbox width calculation 
+        // in nodes with 3+ staff children, ignore them for fullbbox width calculation
         ignoreXcoords = child.type == 'staff' && child.indexAsStaffChildren > 2;
         node.fullbbox = [ignoreXcoords ? node.fullbbox[0] : x1 - x0, y1 - y0];
 
@@ -912,9 +908,8 @@
         // TO_DO drawing titles below images for the first form of calling the library
         if (typeof options.box_html_template == "string") {
             var hBox = new htmlBox(oc_paper, { x: x0, y: y0, width: x1 - x0, height: y1 - y0 });
-            var template = jQuery("#" + options.box_html_template);
-            if (template.length !== 0 && hBox.div !== null) {
-                hBox.div.html(template.render(node));
+            if (template && hBox.div !== null) {
+                hBox.div.html(template(node));
             }
             if (options.debug) {
                 console.log('drawing ' + node.title + ' htmlBox: x=' + x0 + ' y=' + y0 + ' width=' + (x1 - x0) + ' height=' + (y1 - y0));
@@ -925,6 +920,7 @@
             }
         }
         else {
+
             if (typeof (options.box_callback) == "function") {
                 options.box_callback(box);
             }
@@ -947,7 +943,7 @@
                     node.title_lines * options.title_char_size[1] / 2 +
                     (oc_max_title_lines - node.title_lines) * options.title_char_size[1] / 2 -
                     2;
-                if ((options.use_images && node.image !== undefined) && 
+                if ((options.use_images && node.image !== undefined) &&
                     (node.image_position !== undefined && node.image_position == "above")) {   // text below image
                     title_ypos += options.images_size[1] + options.inner_padding;
                 }
@@ -1013,7 +1009,7 @@
 
         this.div = jQuery('<div style="position: absolute; width: 0; height: 0;" class="node"></div>').appendTo(this.raphaelContainer);
         this.update();
-        // If you don't call ggOrgChart.render(data, options); in $(document).ready(function () {...}); 
+        // If you don't call ggOrgChart.render(data, options); in $(document).ready(function () {...});
         // then you should use following approach instead this.update();
         //jQuery(document).bind('ready', this, function(event) { event.data.update(); });
         //jQuery(window).bind('resize', this, function(event) { event.data.update(); });
