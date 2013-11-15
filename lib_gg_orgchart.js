@@ -36,6 +36,7 @@
 */
 
 
+window.ggOrgChart = {};
 
 ( function (window, undefined) {
     // Daclaration of variables in local scope for better performance
@@ -66,6 +67,7 @@
         // define default options
         defaultOptions: {
             container: 'oc_container',         // name of the DIV where the chart will be drawn
+            center: false,                     // centers the container div
             vline: 10,                         // size of the smallest vertical line of connectors
             hline: 10,                         // size of the smallest horizontal line of connectors
             xoffset: 0,                        // inital x-offset of diagram (can be negative)
@@ -766,8 +768,19 @@
     // after all calcs, draw the chart into the 'oc_container' DIV
     //
     function oc_draw() {
-        oc_paper = new Raphael(document.getElementById(options.container), data.root.fullbbox[0], data.root.fullbbox[1]);
+        var $raphaelContainer = jQuery('#' + options.container);
+
+        oc_paper = new Raphael($raphaelContainer[0], data.root.fullbbox[0], data.root.fullbbox[1]);
         oc_draw_obj(data.root, null, options.xoffset, options.yoffset, 0);
+
+        if (!options.enableOffset) {
+            $raphaelContainer.css({ 'position': 'relative' });
+        }
+
+        if (options.center) {
+            $raphaelContainer.width(data.root.fullbbox[0]).css('margin', '0 auto');
+        }
+
         // TO_DO draw orgchart title here (unimplemented - you can use HTML for that)
     }
 
@@ -1016,12 +1029,10 @@
     }
 
     htmlBox.prototype.update = function () {
-        var offset = this.raphaelContainer.offset();
-        if (!this.enableOffset)
-            this.raphaelContainer.css({ 'position': 'relative' });
+        var offset = this.enableOffset ? this.raphaelContainer.offset() : { top : 0, left: 0 };
         this.div.css({
-            'top': (this.y + (this.enableOffset ? offset.top : 0)) + 'px',
-            'left': (this.x + (this.enableOffset ? offset.left : 0)) + 'px',
+            'top': (this.y + offset.top) + 'px',
+            'left': (this.x + offset.left) + 'px',
             'height': (this.height + 'px'),
             'width': (this.width + 'px')
         });
