@@ -35,10 +35,16 @@
 * OM :: Ondrej Machulda (OndraM@github)
 */
 
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['jquery', 'raphael'], factory);
+    } else {
+        // Browser globals
+        root.amdWeb = factory(root.jQuery, root.Raphael);
+    }
+}(window, function (jQuery, Raphael) {
 
-window.ggOrgChart = {};
-
-( function (window, undefined) {
     // Daclaration of variables in local scope for better performance
     var document = window.document;
     var data,             // json organizational chart hierarchy
@@ -48,14 +54,13 @@ window.ggOrgChart = {};
         oc_max_text_height,
         oc_max_title_lines,
         oc_max_subtitle_lines,
-        oc_paper,
-        template;
+        oc_paper;
 
 
 
     // "PUBLIC" FUNCTIONS
 
-    window.ggOrgChart = {
+    var ggOrgChart = {
 
         // call this function in order to draw the chart
         render: function (aData, aOptions) {
@@ -82,7 +87,7 @@ window.ggOrgChart = {};
             box_fix_height: null,              // set fix height for boxes in pixels
             box_root_node_width: null,         // override fix width and max text width
             box_root_node_height: null,        // override fix height and size defined by text length
-            box_html_template: null,           // id of element with template; Depends on jsrender and jQuery libraries!
+            box_html_template: null,           // compiled template function
             line_color: '#3A87AD',             // color of connectors
             title_color: '#3A87AD',            // color of titles
             subtitle_color: '#1A678D',         // color of subtitles
@@ -165,12 +170,6 @@ window.ggOrgChart = {};
         oc_max_title_lines = 0;
         oc_max_subtitle_lines = 0;
         oc_paper = null;
-
-        if (window.Handlebars === undefined || window.jQuery === undefined) {
-            console.log("Handlebars and jQuery are not loaded properly");
-        } else {
-            template = window.Handlebars.compile(options.box_html_template || "");
-        }
     }
 
     // calc all orgchart metrics needed for drawing
@@ -919,10 +918,10 @@ window.ggOrgChart = {};
         // the first branch is for the first form of calling the library
         // and the second branch is for the second form of calling
         // TO_DO drawing titles below images for the first form of calling the library
-        if (typeof options.box_html_template == "string") {
+        if (typeof options.box_html_template == "function") {
             var hBox = new htmlBox(oc_paper, { x: x0, y: y0, width: x1 - x0, height: y1 - y0 });
-            if (template && hBox.div !== null) {
-                hBox.div.html(template(node));
+            if (hBox.div !== null) {
+                hBox.div.html(options.box_html_template(node));
             }
             if (options.debug) {
                 console.log('drawing ' + node.title + ' htmlBox: x=' + x0 + ' y=' + y0 + ' width=' + (x1 - x0) + ' height=' + (y1 - y0));
@@ -1042,6 +1041,7 @@ window.ggOrgChart = {};
         this.div.remove();
     };
 
-})(window);
+    return ggOrgChart;
 
+}));
 // END OF LIBRARY
