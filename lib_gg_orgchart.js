@@ -41,7 +41,7 @@
         define(['jquery', 'raphael'], factory);
     } else {
         // Browser globals
-        root.amdWeb = factory(root.jQuery, root.Raphael);
+        root.ggOrgChart = factory(root.jQuery, root.Raphael);
     }
 }(window, function (jQuery, Raphael) {
 
@@ -89,6 +89,7 @@
             box_root_node_height: null,        // override fix height and size defined by text length
             box_html_template: null,           // compiled template function
             line_color: '#3A87AD',             // color of connectors
+            line_dash: false,                  // wether to use dashed lines
             title_color: '#3A87AD',            // color of titles
             subtitle_color: '#1A678D',         // color of subtitles
             title_font_size: 12,               // size of font used for displaying titles inside boxes
@@ -208,7 +209,7 @@
         var lines = [];
         var line_str = '';
         var last_line_str = '';
-        for (var i = 0; i < parts.length - (0); i++) {
+        for (var i = 0; i < parts.length - (0) ; i++) {
             last_line_str = line_str;
             line_str += (i === 0 ? '' : ' ') + parts[i];
             if (line_str.length > options.max_text_width) {
@@ -319,7 +320,7 @@
         var parts = (text + "").split('\n');
         if (parts.length === 0)
             return [0, 0];
-        for (var i = 0; i < parts.length - (0); i++) {
+        for (var i = 0; i < parts.length - (0) ; i++) {
             if (parts[i].length > width)
                 width = parts[i].length;
         }
@@ -341,10 +342,10 @@
         node.xoffset2 = 0;
 
         // traverse down recursively; add position attribute to collateral and staff children
-        var oc_staff_position      = 0;
+        var oc_staff_position = 0;
         var oc_collateral_position = 0;
-        var oc_staff_counter       = 0;
-        var oc_collateral_counter  = 0;
+        var oc_staff_counter = 0;
+        var oc_collateral_counter = 0;
         var oc_subordinate_counter = 0;
 
         // invoke recursively,
@@ -374,7 +375,7 @@
 
         // now calc this node boundbox and deltacenter
         node.boundbox = [
-            oc_max_text_width  + 2 * options.inner_padding,
+            oc_max_text_width + 2 * options.inner_padding,
             oc_max_text_height + 2 * options.inner_padding
         ];
         if (node.is_root) {
@@ -533,13 +534,13 @@
 
         // calc total width and xoffset of this node
         var left_width = 0;
-        if (collateral_left_width > left_width)        left_width = collateral_left_width;
-        if (staff_left_width > left_width)             left_width = staff_left_width;
-        if (subordinate_full_width / 2 > left_width)   left_width = subordinate_full_width / 2;
+        if (collateral_left_width > left_width) left_width = collateral_left_width;
+        if (staff_left_width > left_width) left_width = staff_left_width;
+        if (subordinate_full_width / 2 > left_width) left_width = subordinate_full_width / 2;
         var right_width = 0;
-        if (collateral_right_width > right_width)      right_width = collateral_right_width;
-        if (staff_right_width > right_width)           right_width = staff_right_width;
-        if (subordinate_full_width / 2 > right_width)  right_width = subordinate_full_width / 2;
+        if (collateral_right_width > right_width) right_width = collateral_right_width;
+        if (staff_right_width > right_width) right_width = staff_right_width;
+        if (subordinate_full_width / 2 > right_width) right_width = subordinate_full_width / 2;
         node.xoffset = left_width - node.boundbox[0] / 2;
 
         // now calc this node fullbbox, and deltacorner of children
@@ -677,7 +678,7 @@
         // PATCHES FOR SPECIAL CASES
         //
         if (subtreeMustBeShiftedRight(node)) {
-            node.xoffset2    += node.boundbox[0] / 2;
+            node.xoffset2 += node.boundbox[0] / 2;
             node.fullbbox[0] += node.boundbox[0] / 2;
         }
     }
@@ -696,7 +697,7 @@
     //
     function subtreeMustBeShiftedRightCaseA(node) {
         var subordinate_count = 0;
-        var child_count       = 0;
+        var child_count = 0;
         if (node.children !== undefined) {
             for (i = 0; i < node.children.length; i++) {
                 child = node.children[i];
@@ -729,8 +730,8 @@
                     child2 = child.children[j];
                     if (child2.type == 'subordinate')
                         subordinate_count++;
-                        if (subordinate_count >= 2)
-                            return true;
+                    if (subordinate_count >= 2)
+                        return true;
                 }
             }
         }
@@ -749,10 +750,10 @@
         //    child.position = (oc_staff_position++ % 2 == 0 ? 'left' : 'right');
 
         // calcs
-        if (cdc0 < x0)                     x0 = cdc0;
+        if (cdc0 < x0) x0 = cdc0;
         if (cdc0 + child.fullbbox[0] > x1) x1 = cdc0 + child.fullbbox[0];
         if (cdc1 + child.fullbbox[1] > y1) y1 = cdc1 + child.fullbbox[1];
-        if (x0 < node.deltacorner[0])      node.deltacorner[0] = x0;
+        if (x0 < node.deltacorner[0]) node.deltacorner[0] = x0;
 
         // in nodes with 3+ staff children, ignore them for fullbbox width calculation
         ignoreXcoords = child.type == 'staff' && child.indexAsStaffChildren > 2;
@@ -808,7 +809,7 @@
         }
 
         // prepare euclidean vars
-        var width =  node.boundbox[0] - 2 * options.hline - 2 * options.inner_padding;
+        var width = node.boundbox[0] - 2 * options.hline - 2 * options.inner_padding;
         var height = node.boundbox[1] - 2 * options.vline - 2 * options.inner_padding;
         var xc = xoffset + node.deltacorner[0] + node.deltacenter[0] + node.xoffset + node.xoffset2;
         var yc = yoffset + node.deltacorner[1] + node.deltacenter[1];
@@ -875,13 +876,17 @@
             } else { // subordinate
                 if (node.is_root === undefined) {
                     // path = 'M ' + xc + ' ' + y0 + ' v -' + options.vline + ' h ' + (pxc - xc) + ' V ' + py1;
-                    path = 'M ' + xc + ' ' + yc + ' v -' + (options.vline + yc - y0)+ ' h ' + (pxc - xc) + ' V ' + pyc;
+                    path = 'M ' + xc + ' ' + yc + ' v -' + (options.vline + yc - y0) + ' h ' + (pxc - xc) + ' V ' + pyc;
                     line = oc_paper.path(path);
                 }
             }
             line.attr('stroke', options.line_color);
             // FYI: stroke-opacity worked from stroke-width 1.8 and above for me
             line.attr('stroke-width', 2);
+
+            if (options.line_dash) {
+                line.attr('stroke-dasharray', '- ');
+            }
             // opacity to 1 to disquise that lines are over each other
             line.attr('stroke-opacity', 1);
             line.attr('stroke-linejoin', "round");
@@ -897,7 +902,7 @@
             box.visible = true;
         }
         else {
-            box = { visible : false };
+            box = { visible: false };
         }
 
         // draw optional images
@@ -1028,7 +1033,7 @@
     }
 
     htmlBox.prototype.update = function () {
-        var offset = this.enableOffset ? this.raphaelContainer.offset() : { top : 0, left: 0 };
+        var offset = this.enableOffset ? this.raphaelContainer.offset() : { top: 0, left: 0 };
         this.div.css({
             'top': (this.y + offset.top) + 'px',
             'left': (this.x + offset.left) + 'px',
